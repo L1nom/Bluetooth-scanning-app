@@ -1,8 +1,6 @@
 import customtkinter
-from customtkinter import *
 import asyncio
 from bleak import BleakScanner
-from tkinter import messagebox
 import requests
 import json
 import threading
@@ -16,6 +14,7 @@ login_frame.geometry("600x350")
 
 device_list = []
 token = None
+student_id_encrypted = None
 
 
 async def main():
@@ -36,9 +35,9 @@ def login():
             response_code = validate_login(student_id, student_password)
             # response_code = 200
             if response_code == 200:
-                entry1.pack_forget()
-                entry2.pack_forget()
-                button.forget()
+                entry1.destroy()
+                entry2.destroy()
+                button.destroy()
                 button1.pack(pady=12, padx=10)
                 button2.pack(pady=12, padx=10)
 
@@ -48,6 +47,7 @@ def login():
 
 def validate_login(student_id, password):
     global token
+    global student_id_encrypted
     url = 'https://capstonebackend.fly.dev/auth/signin'
     header = {
         'Content-Type': 'application/json'}
@@ -60,28 +60,50 @@ def validate_login(student_id, password):
 
     if response.status_code == 200:
         response_dictionary = json.loads(response.text)
+        print(response_dictionary)
         token = response_dictionary['token']
+        student_id_encrypted = response_dictionary['user']['_id']
 
     return response.status_code
 
 
-def question():
-    print('raise')
-    pass
+def raise_hand():
+    url = "https://capstonebackend.fly.dev/set/raise_hand"
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': token
+    }
+
+    payload = json.dumps({
+        "course_id": "63e3e57dc347381e72c419e5",
+        "student_id": student_id_encrypted,
+        "hand_raised": True
+    })
+
+    response = requests.put(url, headers=headers, data=payload)
+
+    print(response.status_code)
 
 
 def scan():
-    print(token)
+    # print(token)
     url = "https://capstonebackend.fly.dev/set/student_position"
     headers = {
         'Content-Type': 'application/json',
         'Authorization': token
     }
 
+    scanning_message.pack()
+    progress_bar.pack(pady=12, padx=10)
+    progress_bar.start()
+    progress_bar.step()
     asyncio.run(main())
+    scanning_message.destroy()
+    progress_bar.stop()
+    progress_bar.destroy()
     # loop = asyncio.get_event_loop()
     # loop.run_until_complete(main())
-    print(device_list)
+    # print(device_list)
 
     if device_list:
         # location_x, location_y = multilaterate(device_list)
@@ -95,9 +117,9 @@ def scan():
         response = requests.post(url, headers=headers, data=payload)
 
         if response.status_code == 200:
-            button1.forget()
+            button1.destroy()
 
-        print(response.text)
+        # print(response.text)
 
 
 frame = customtkinter.CTkFrame(master=login_frame)
@@ -116,6 +138,12 @@ button = customtkinter.CTkButton(master=login_frame, text="Login", command=login
 button.pack(pady=12, padx=10)
 
 button1 = customtkinter.CTkButton(master=login_frame, text="Scan", command=threading.Thread(target=scan).start)
-button2 = customtkinter.CTkButton(master=login_frame, text="Raise Hand", command=question)
+button2 = customtkinter.CTkButton(master=login_frame, text="Raise Hand", command=raise_hand)
+
+scanning_message = customtkinter.CTkLabel(master=login_frame, text="Scanning...")
+scanning_success = customtkinter.CTkLabel(master=login_frame, text="Finished scanning!")
+
+progress_bar = customtkinter.CTkProgressBar(login_frame, orientation='horizontal', mode='indeterminate')
+
 
 login_frame.mainloop()
