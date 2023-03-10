@@ -5,6 +5,7 @@ from bleak import BleakScanner
 from tkinter import messagebox
 import requests
 import json
+import threading
 from main import multilaterate
 
 customtkinter.set_appearance_mode("dark")
@@ -14,15 +15,7 @@ login_frame = customtkinter.CTk()
 login_frame.geometry("600x350")
 
 device_list = []
-
-token = ''
-
-headers = {
-    'Content-Type': 'application/json',
-    'Authorization': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9'
-                     '.eyJfaWQiOiI2Mzg2OWUwMGVmM2NiNzQ3NWFmNDgyZjUiLCJpYXQiOjE2NzU4Nzg3Mzl9'
-                     '.o61yOrLGb9ghXZe1ZsjmkdnBuoiuo0hjp6dDH_wGQ_M '
-}
+token = None
 
 
 async def main():
@@ -32,16 +25,16 @@ async def main():
 
 
 def login():
-    student_id = entry1.get()
-    student_password = entry2.get()
+    student_id = entry1.get().strip()
+    student_password = entry2.get().strip()
 
-    print(student_id)
-    print(student_password)
+    # print((student_id))
+    # print((student_password))
 
     if student_id and student_password:
         try:
             response_code = validate_login(student_id, student_password)
-            response_code = 200
+            # response_code = 200
             if response_code == 200:
                 entry1.pack_forget()
                 entry2.pack_forget()
@@ -54,15 +47,21 @@ def login():
 
 
 def validate_login(student_id, password):
-    url = "https://capstonebackend.fly.dev/auth/signin"
-
+    global token
+    url = 'https://capstonebackend.fly.dev/auth/signin'
+    header = {
+        'Content-Type': 'application/json'}
     payload_data = json.dumps({
-        "studentID": student_id,
-        "password": password
+        "password": password,
+        "studentID": student_id
     })
 
-    response = requests.request("POST", url, data=payload_data)
-    print(response.text)
+    response = requests.post(url, headers=header, data=payload_data)
+
+    if response.status_code == 200:
+        response_dictionary = json.loads(response.text)
+        token = response_dictionary['token']
+
     return response.status_code
 
 
@@ -72,16 +71,16 @@ def question():
 
 
 def scan():
+    print(token)
     url = "https://capstonebackend.fly.dev/set/student_position"
     headers = {
         'Content-Type': 'application/json',
-        'Authorization': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9'
-                         '.eyJfaWQiOiI2Mzg2OWUwMGVmM2NiNzQ3NWFmNDgyZjUiLCJpYXQiOjE2NzU4Nzg3Mzl9'
-                         '.o61yOrLGb9ghXZe1ZsjmkdnBuoiuo0hjp6dDH_wGQ_M '
+        'Authorization': token
     }
 
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(main())
+    asyncio.run(main())
+    # loop = asyncio.get_event_loop()
+    # loop.run_until_complete(main())
     print(device_list)
 
     if device_list:
@@ -93,7 +92,7 @@ def scan():
             "y_position": location_y
         })
 
-        response = requests.request("POST", url, headers=headers, data=payload)
+        response = requests.post(url, headers=headers, data=payload)
 
         if response.status_code == 200:
             button1.forget()
@@ -116,8 +115,7 @@ entry2.pack(pady=12, padx=10)
 button = customtkinter.CTkButton(master=login_frame, text="Login", command=login)
 button.pack(pady=12, padx=10)
 
-button1 = customtkinter.CTkButton(master=login_frame, text="Scan", command=scan)
-
+button1 = customtkinter.CTkButton(master=login_frame, text="Scan", command=threading.Thread(target=scan).start)
 button2 = customtkinter.CTkButton(master=login_frame, text="Raise Hand", command=question)
 
 login_frame.mainloop()
