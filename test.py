@@ -59,11 +59,15 @@ def validate_login(student_id, password):
     response = requests.post(url, headers=header, data=payload_data)
 
     if response.status_code == 200:
+        login_success_message.pack()
+        login_success_message.after(3000, login_success_message.destroy)
         response_dictionary = json.loads(response.text)
         print(response_dictionary)
         token = response_dictionary['token']
         student_id_encrypted = response_dictionary['user']['_id']
-
+    else:
+        login_error_message.pack()
+        login_error_message.after(3000, login_error_message.destroy)
     return response.status_code
 
 
@@ -99,8 +103,11 @@ def scan():
     progress_bar.step()
     asyncio.run(main())
     scanning_message.destroy()
+    scanning_success.pack()
+    scanning_success.after(3000, scanning_success.destroy)
     progress_bar.stop()
     progress_bar.destroy()
+
     # loop = asyncio.get_event_loop()
     # loop.run_until_complete(main())
     # print(device_list)
@@ -118,14 +125,14 @@ def scan():
 
         if response.status_code == 200:
             button1.destroy()
+        else:
+            error_message.pack()
+            error_message.after(3000, error_message.destroy)
 
-        # print(response.text)
+# frame = customtkinter.CTkFrame(master=login_frame)
+# frame.pack(pady=20, padx=60, fill="both", expand=True)
 
-
-frame = customtkinter.CTkFrame(master=login_frame)
-frame.pack(pady=20, padx=60, fill="both", expand=True)
-
-label = customtkinter.CTkLabel(master=frame, text="Login", font=("Roboto", 24))
+label = customtkinter.CTkLabel(master=login_frame, text="Login", font=("Roboto", 24))
 label.pack(pady=12, padx=10)
 
 entry1 = customtkinter.CTkEntry(master=login_frame, placeholder_text="Student ID")
@@ -140,8 +147,11 @@ button.pack(pady=12, padx=10)
 button1 = customtkinter.CTkButton(master=login_frame, text="Scan", command=threading.Thread(target=scan).start)
 button2 = customtkinter.CTkButton(master=login_frame, text="Raise Hand", command=raise_hand)
 
+login_error_message = customtkinter.CTkLabel(master=login_frame, text="Login Error!\nPlease make sure you are using a valid ID and password")
+login_success_message = customtkinter.CTkLabel(master=login_frame, text="Succesfully logged in!")
 scanning_message = customtkinter.CTkLabel(master=login_frame, text="Scanning...")
 scanning_success = customtkinter.CTkLabel(master=login_frame, text="Finished scanning!")
+error_message = customtkinter.CTkLabel(master=login_frame, text="Scan error! Position not found. \n Please check Bluetooth, Internet, and an active class are available")
 
 progress_bar = customtkinter.CTkProgressBar(login_frame, orientation='horizontal', mode='indeterminate')
 
