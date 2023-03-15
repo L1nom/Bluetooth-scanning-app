@@ -103,7 +103,7 @@ def scan():
 
     if device_list:
         # location_x, location_y = trilateration(beacon_location_list, rssi_list)
-        location_x, location_y = 25, 125
+        location_x, location_y = 50, 125
         payload = json.dumps({
             "course_id": "63e3e57dc347381e72c419e5",
             "x_position": location_x,
@@ -140,7 +140,8 @@ login_success_message = customtkinter.CTkLabel(master=login_frame, text="Succesf
 scanning_message = customtkinter.CTkLabel(master=login_frame, text="Scanning...")
 scanning_success = customtkinter.CTkLabel(master=login_frame, text="Finished scanning!")
 error_message = customtkinter.CTkLabel(master=login_frame,
-                                       text="Scan error! Position not found. \n Please check Bluetooth, Internet, and an active class are available")
+                                       text="Scan error! Position not found. \n Please check Bluetooth, Internet, "
+                                            "and an active class are available")
 
 progress_bar = customtkinter.CTkProgressBar(login_frame, orientation='horizontal', mode='indeterminate')
 
