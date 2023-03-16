@@ -5,6 +5,7 @@ import requests
 import json
 import threading
 from location import trilateration
+import sys
 
 customtkinter.set_appearance_mode("dark")
 customtkinter.set_default_color_theme("dark-blue")
@@ -15,6 +16,11 @@ login_frame.geometry("600x350")
 device_list = []
 token = None
 student_id_encrypted = None
+
+test_1 = sys.argv[1]
+test_2 = sys.argv[2]
+
+print(test_1, test_2)
 
 
 async def main():
