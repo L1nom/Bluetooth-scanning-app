@@ -18,8 +18,8 @@ root.geometry("600x350")
 
 destroy = False
 
-# test = sys.argv[1]
-test = "zlocatify:?token=\"aqqweqweqwwe\"?course_id=\"qweqeqwqwe\"?session_id=\"qweqeqwqwe\"?student_id=\"qweqeqwqwe\""
+test = sys.argv[1]
+# test = "zlocatify:?token=\"aqqweqweqwwe\"?course_id=\"qweqeqwqwe\"?session_id=\"qweqeqwqwe\"?student_id=\"qweqeqwqwe\""
 splits = test.split('?')
 if splits[1]:
     token = splits[1]
@@ -69,7 +69,7 @@ async def scanning_task():
         device_list = []
         for d in devices:
             device_list.append([d.address, d.rssi])
-        print("Done")
+        print(device_list[0])
 
         await asyncio.sleep(1)
 
