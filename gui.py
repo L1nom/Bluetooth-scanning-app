@@ -105,7 +105,7 @@ async def scanning_task():
                 error_message.after(3000, error_message.forget)
 
         # Wait for 1 minute before running again
-        await asyncio.sleep(10)
+        await asyncio.sleep(60)
 
 
 def start_scanning_task():
