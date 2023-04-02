@@ -17,7 +17,7 @@ device_list = []
 token = None
 student_id_encrypted = None
 
-test = sys.argv[1]
+# test = sys.argv[1]
 
 
 # test = "zlocatify:?header=\"aqqweqweqwwe\"?course_id=\"qweqeqwqwe\""
@@ -73,6 +73,7 @@ def validate_login(student_id, password):
         response_dictionary = json.loads(response.text)
         token = response_dictionary['token']
         student_id_encrypted = response_dictionary['user']['_id']
+        print(token)
     else:
         login_error_message.pack()
         login_error_message.after(3000, login_error_message.destroy)
@@ -80,7 +81,7 @@ def validate_login(student_id, password):
 
 
 def raise_hand():
-    url = "https://capstonebackend.fly.dev/set/raise_hand"
+    url = "https://capstonebackend.fly.dev/raise_hand"
     headers = {
         'Content-Type': 'application/json',
         'Authorization': token
@@ -93,6 +94,7 @@ def raise_hand():
     })
 
     response = requests.put(url, headers=headers, data=payload)
+    print(response.status_code)
 
 
 def scan():
@@ -116,7 +118,7 @@ def scan():
 
     if device_list:
         # location_x, location_y = trilateration(beacon_location_list, rssi_list)
-        location_x, location_y = 50, 125
+        location_x, location_y = 150, 225
         payload = json.dumps({
             "course_id": "63e3e57dc347381e72c419e5",
             "x_position": location_x,
@@ -130,6 +132,7 @@ def scan():
         else:
             error_message.pack()
             error_message.after(3000, error_message.destroy)
+            print(response)
 
 
 label = customtkinter.CTkLabel(master=login_frame, text="Login", font=("Roboto", 24))

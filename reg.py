@@ -15,7 +15,6 @@ try:
             with winreg.OpenKeyEx(path, r"zLocatify\\shell\\open", 0, winreg.KEY_ALL_ACCESS) as open:
                 winreg.CreateKey(open, "command")
                 with winreg.OpenKeyEx(path, r"zLocatify\\shell\\open\\command", 0, winreg.KEY_ALL_ACCESS) as command:
-                    # winreg.SetValueEx(command, None, 0, winreg.REG_SZ, "\"C:\Windows\System32\calc.exe\" \"%1\",")
                     winreg.SetValueEx(command, None, 0, winreg.REG_SZ, file_path)
 
 except PermissionError:
