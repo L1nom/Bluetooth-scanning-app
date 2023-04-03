@@ -28,7 +28,7 @@ if splits[3]:
     student_id = student_id.split('=')[1]
 if splits[4]:
     session_id = splits[4]
-    session_id = session_id.split('=')[1]
+    session_id = session_id.split('=')[1].strip(',')
 
 
 def join_session():
@@ -60,12 +60,13 @@ async def scanning_task():
         progress_bar.start()
         progress_bar.step()
 
+        if not check_active_session:
+            os._quit(1)
+
         devices = await BleakScanner.discover(timeout=10.0)
         device_dict = {}
         for d in devices:
             device_dict[d.address] = d.rssi
-            print(device_dict)
-
         await asyncio.sleep(1)
 
         if destroy:
@@ -113,7 +114,6 @@ def start_scanning_task():
         loop.run_forever()
     finally:
         try:
-            
             loop.run_until_complete(loop.shutdown_asyncgens())
             loop.close()
             root.destroy()
@@ -124,8 +124,7 @@ def start_scanning_task():
 
 
 def check_active_session():
-    url = "https://capstonebackendapi.fly.dev/get/session/{}".format(session_id)
-    print(url)
+    url = "https://capstonebackendapi.fly.dev/get/session/{}".format(str(session_id))
     headers = {
         'Content-Type': 'application/json',
         'Authorization': token
@@ -152,11 +151,17 @@ def on_raise_hand():
 
         response = requests.put(url, headers=headers, data=payload)
 
+        if response.status_code == 200:
+            print('Hand Raised')
+        else:
+            print('Error Raising Hand')
+
+
     else:
         raise_button.destroy()
         error_message = customtkinter.CTkLabel(master=root, text="Class is over...")
         error_message.pack()
-        error_message.after(2000, error_message.destroy)
+        
         payload = json.dumps({
             "course_id": course_id,
             "student_id": student_id,
@@ -164,11 +169,11 @@ def on_raise_hand():
         })
 
         response = requests.put(url, headers=headers, data=payload)
-        os._exit(1)
+        error_message.after(5000, on_closing)
+        
 
         
 def on_closing():
-    global destroy
     root.destroy()
     loop.stop()
     os._exit(1)
