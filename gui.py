@@ -1,14 +1,10 @@
 import threading
-import asyncio
-import tkinter as tk
 import customtkinter
 import asyncio
 from bleak import BleakScanner
 import requests
 import json
-import threading
 from location import trilateration
-import threading
 import os
 import sys
 
@@ -27,13 +23,12 @@ if splits[1]:
 if splits[2]:
     course_id = splits[2]
     course_id = course_id.split('=')[1]
-if splits[4]:
-    session_id = splits[4]
-    session_id = session_id.split('=')[1]
 if splits[3]:
     student_id = splits[3]
     student_id = student_id.split('=')[1]
-print(token, course_id, session_id, student_id)
+if splits[4]:
+    session_id = splits[4]
+    session_id = session_id.split('=')[1]
 
 
 def join_session():
@@ -47,8 +42,8 @@ def join_session():
                 "course_id": course_id,
                 "student_id ": student_id
             })
-    
-    requests.post(url, headers=headers, data=payload)
+
+    response = requests.post(url, headers=headers, data=payload)
 
 
 async def scanning_task():
@@ -66,10 +61,10 @@ async def scanning_task():
         progress_bar.step()
 
         devices = await BleakScanner.discover(timeout=10.0)
-        device_list = []
+        device_dict = {}
         for d in devices:
-            device_list.append([d.address, d.rssi])
-        print(device_list[0])
+            device_dict[d.address] = d.rssi
+            print(device_dict)
 
         await asyncio.sleep(1)
 
@@ -86,7 +81,7 @@ async def scanning_task():
         progress_bar.stop()
         progress_bar.forget()
 
-        if device_list:
+        if device_dict:
             # location_x, location_y = trilateration(beacon_location_list, rssi_list)
             location_x, location_y = 300, 400
             payload = json.dumps({
@@ -99,7 +94,7 @@ async def scanning_task():
             response = requests.post(url, headers=headers, data=payload)
 
             if response.status_code == 200:
-                print('pushed')
+                print('Position Updated')
             if response.status_code != 200:
                 error_message.pack()
                 error_message.after(3000, error_message.forget)
@@ -137,7 +132,6 @@ def check_active_session():
     }
     response = requests.get(url, headers=headers)
     response_dictionary = json.loads(response.text)
-    print(response_dictionary)
     active = response_dictionary['session']['active']
     return active
 
@@ -148,12 +142,8 @@ def on_raise_hand():
         'Content-Type': 'application/json',
         'Authorization': token
     }
-    print('about to check active session')
     active = check_active_session()
-    print(active)
-    if active == True:
-        print("Hello")
-        
+    if active:        
         payload = json.dumps({
             "course_id": course_id,
             "student_id": student_id,
@@ -174,14 +164,9 @@ def on_raise_hand():
         })
 
         response = requests.put(url, headers=headers, data=payload)
-        print(response.status_code)
+        os._exit(1)
 
         
-
-
-
-
-
 def on_closing():
     global destroy
     root.destroy()
@@ -212,7 +197,6 @@ thread = threading.Thread(target=start_scanning_task)
 thread.start()
 
 # Start the Tkinter event loop on the main thread
-
-root.mainloop()
 join_session()
+root.mainloop()
 
