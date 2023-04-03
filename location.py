@@ -3,13 +3,6 @@ from scipy.optimize import least_squares
 
 
 def rssi_to_meters(rssi):
-    # Convert RSSI to distance in meters
-    # txPower = -40  # This is the signal strength in dBm at 1-meter distance
-    # ratio = rssi * 1.0 / txPower
-    # if ratio < 1.0:
-    #     return math.pow(ratio, 10)
-    # else:
-    #     return (0.89976) * math.pow(ratio, 7.7095) + 0.111
     txPower = -40
     ratio = rssi * 1.0 / txPower
     if ratio < 1.0:
