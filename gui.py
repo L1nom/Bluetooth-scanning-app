@@ -10,6 +10,7 @@ import threading
 from location import trilateration
 import threading
 import os
+import sys
 
 # Define our constants
 
@@ -19,7 +20,6 @@ root.geometry("600x350")
 destroy = False
 
 test = sys.argv[1]
-# test = "zlocatify:?token=\"aqqweqweqwwe\"?course_id=\"qweqeqwqwe\"?session_id=\"qweqeqwqwe\"?student_id=\"qweqeqwqwe\""
 splits = test.split('?')
 if splits[1]:
     token = splits[1]
@@ -37,7 +37,7 @@ print(token, course_id, session_id, student_id)
 
 
 def join_session():
-    url = "https://capstonebackend.fly.dev/join/session"
+    url = "https://capstonebackendapi.fly.dev/join/session"
     headers = {
         'Content-Type': 'application/json',
         'Authorization': token
@@ -52,7 +52,7 @@ def join_session():
 
 
 async def scanning_task():
-    url = "https://capstonebackend.fly.dev/set/student_position"
+    url = "https://capstonebackendapi.fly.dev/set/student_position"
     headers = {
         'Content-Type': 'application/json',
         'Authorization': token
@@ -130,7 +130,7 @@ def start_scanning_task():
 
 def on_raise_hand():
     print("Hello")
-    url = "https://capstonebackend.fly.dev/raise_hand"
+    url = "https://capstonebackendapi.fly.dev/raise_hand"
     headers = {
         'Content-Type': 'application/json',
         'Authorization': token
