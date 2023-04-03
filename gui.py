@@ -27,8 +27,8 @@ if splits[1]:
 if splits[2]:
     course_id = splits[2]
     course_id = course_id.split('=')[1]
-if splits[3]:
-    session_id = splits[3]
+if splits[4]:
+    session_id = splits[4]
     session_id = session_id.split('=')[1]
 if splits[3]:
     student_id = splits[3]
@@ -129,19 +129,16 @@ def start_scanning_task():
 
 
 def check_active_session():
-    url = "https://capstonebackendapi.fly.dev/get/sessions/:course_id"
+    url = "https://capstonebackendapi.fly.dev/get/session/{}".format(session_id)
+    print(url)
     headers = {
         'Content-Type': 'application/json',
         'Authorization': token
     }
-
-    payload = json.dumps({
-        "course_id": course_id,
-
-    })
-    response = requests.put(url, headers=headers, data=payload)
+    response = requests.get(url, headers=headers)
     response_dictionary = json.loads(response.text)
-    active = response_dictionary['data']['session']['active']
+    print(response_dictionary)
+    active = response_dictionary['session']['active']
     return active
 
 
@@ -151,10 +148,12 @@ def on_raise_hand():
         'Content-Type': 'application/json',
         'Authorization': token
     }
-    if check_active_session() == True:
+    print('about to check active session')
+    active = check_active_session()
+    print(active)
+    if active == True:
         print("Hello")
         
-
         payload = json.dumps({
             "course_id": course_id,
             "student_id": student_id,
@@ -162,7 +161,6 @@ def on_raise_hand():
         })
 
         response = requests.put(url, headers=headers, data=payload)
-        print(response.status_code)
 
     else:
         raise_button.destroy()
@@ -177,6 +175,8 @@ def on_raise_hand():
 
         response = requests.put(url, headers=headers, data=payload)
         print(response.status_code)
+
+        
 
 
 
