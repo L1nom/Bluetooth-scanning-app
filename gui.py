@@ -128,9 +128,8 @@ def start_scanning_task():
             os._exit(1)
 
 
-def on_raise_hand():
-    print("Hello")
-    url = "https://capstonebackendapi.fly.dev/raise_hand"
+def check_active_session():
+    url = "https://capstonebackendapi.fly.dev/get/sessions/:course_id"
     headers = {
         'Content-Type': 'application/json',
         'Authorization': token
@@ -138,12 +137,48 @@ def on_raise_hand():
 
     payload = json.dumps({
         "course_id": course_id,
-        "student_id": student_id,
-        "hand_raised": True
-    })
 
+    })
     response = requests.put(url, headers=headers, data=payload)
-    print(response.status_code)
+    response_dictionary = json.loads(response.text)
+    active = response_dictionary['data']['session']['active']
+    return active
+
+
+def on_raise_hand():
+    url = "https://capstonebackendapi.fly.dev/raise_hand"
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': token
+    }
+    if check_active_session() == True:
+        print("Hello")
+        
+
+        payload = json.dumps({
+            "course_id": course_id,
+            "student_id": student_id,
+            "hand_raised": True
+        })
+
+        response = requests.put(url, headers=headers, data=payload)
+        print(response.status_code)
+
+    else:
+        raise_button.destroy()
+        error_message = customtkinter.CTkLabel(master=root, text="Class is over...")
+        error_message.pack()
+        error_message.after(2000, error_message.destroy)
+        payload = json.dumps({
+            "course_id": course_id,
+            "student_id": student_id,
+            "hand_raised": False
+        })
+
+        response = requests.put(url, headers=headers, data=payload)
+        print(response.status_code)
+
+
 
 
 
@@ -177,4 +212,7 @@ thread = threading.Thread(target=start_scanning_task)
 thread.start()
 
 # Start the Tkinter event loop on the main thread
+
 root.mainloop()
+join_session()
+
