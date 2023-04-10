@@ -15,6 +15,12 @@ root.geometry("600x350")
 
 destroy = False
 
+beacons_list = [[]]
+
+# 'DB:97:95:82:E4:90'
+# 'C9:1C:20:01:05:6B'
+# 'E8:CF:FE:45:29:C5'
+# 'FD:78:D4:74:16:EF'
 test = sys.argv[1]
 splits = test.split('?')
 if splits[1]:
@@ -63,11 +69,10 @@ async def scanning_task():
         if not check_active_session:
             os._quit(1)
 
-        devices = await BleakScanner.discover(timeout=10.0)
-        device_dict = {}
-        for d in devices:
-            device_dict[d.address] = d.rssi
-        await asyncio.sleep(1)
+        E8 = await BleakScanner.find_device_by_address('E8:CF:FE:45:29:C5', timeout=5)
+        DB = await BleakScanner.find_device_by_address('DB:97:95:82:E4:90', timeout=5)
+        FD = await BleakScanner.find_device_by_address('FD:78:D4:74:16:EF', timeout=5)
+        C9 = await BleakScanner.find_device_by_address('C9:1C:20:01:05:6B', timeout=5)
 
         if destroy:
             try:
@@ -82,8 +87,15 @@ async def scanning_task():
         progress_bar.stop()
         progress_bar.forget()
 
-        if device_dict:
-            # location_x, location_y = trilateration(beacon_location_list, rssi_list)
+        if C9 and DB and E8 and FD:
+            try:
+                rssi_list = [C9.rssi, DB.rssi, E8.rssi, FD.rssi]
+                print(rssi_list)
+                beacon_location_list=[(0,0),(0,6.1), (6.1,0),(6.1, 6.1)]
+                location_x, location_y = trilateration(beacon_location_list, rssi_list)
+                print(location_x, location_y)
+            except:
+                pass
             location_x, location_y = 300, 400
             payload = json.dumps({
                 "course_id": course_id,
@@ -101,7 +113,7 @@ async def scanning_task():
                 error_message.after(3000, error_message.forget)
 
         # Wait for 1 minute before running again
-        await asyncio.sleep(60)
+        await asyncio.sleep(10)
 
 
 def start_scanning_task():

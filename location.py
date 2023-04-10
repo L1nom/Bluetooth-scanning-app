@@ -3,7 +3,7 @@ from scipy.optimize import least_squares
 
 
 def rssi_to_meters(rssi):
-    txPower = -40
+    txPower = -65
     ratio = rssi * 1.0 / txPower
     if ratio < 1.0:
         return math.pow(ratio, 10)
