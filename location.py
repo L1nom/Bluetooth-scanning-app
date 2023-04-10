@@ -1,28 +1,27 @@
-import math
+import numpy as np
 from scipy.optimize import least_squares
 
+def rssi_to_distance(rssi, tx_power, n):
+    return 10 ** ((tx_power - rssi) / (10 * n))
 
-def rssi_to_meters(rssi):
-    txPower = -65
-    ratio = rssi * 1.0 / txPower
-    if ratio < 1.0:
-        return math.pow(ratio, 10)
-    else:
-        return math.pow((-rssi / (10 * 2)), 10)
+def trilateration(beacons, rssi_readings):
+    tx_power, n = -65, 2
+    def objective_func(x, beacons, distances):
+        return [(np.sqrt((x[0] - beacon[0]) ** 2 + (x[1] - beacon[1]) ** 2) - distance) for beacon, distance in zip(beacons, distances)]
 
-
-def trilateration(beacon_list, rssi_list):
-    # Convert RSSI readings to distances in meters
-    d_list = [rssi_to_meters(rssi) for rssi in rssi_list]
-
-    # Define the trilateration equations
-    def fun(p):
-        x_list = [beacon[0] for beacon in beacon_list]
-        y_list = [beacon[1] for beacon in beacon_list]
-        return [(x - p[0]) ** 2 + (y - p[1]) ** 2 - d ** 2 for x, y, d in zip(x_list, y_list, d_list)]
-
-    # Solve the trilateration equations using least squares
-    res = least_squares(fun, [0, 0])
-
-    # Return laptop location
+    distances = [rssi_to_distance(rssi, tx_power, n) for rssi in rssi_readings]
+    distances = [3.0567, 3.1313, 3.6629 , 3.7189]
+    initial_guess = np.mean(beacons, axis=0)
+    res = least_squares(objective_func, initial_guess, args=(beacons, distances))
     return res.x[0], res.x[1]
+
+# Example usage
+# D C E F
+# beacon_list = [(6.2587, 3.12), (1.524, 3.12), (6.2587, 7.7362), (1.524,7.7362)]
+
+# rssi_list = [-73, -60, -73, -75]
+# # tx_power = -65 # Example TxPower at 1 meter
+# # n = 2  # Example path loss exponent
+
+# object_location = trilateration(beacon_list, rssi_list)
+# print(object_location)
