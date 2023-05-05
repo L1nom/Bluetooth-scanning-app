@@ -89,21 +89,26 @@ async def scanning_task():
 
         if C9 and DB and E8 and FD:
             try:
-                rssi_list = [C9.rssi, DB.rssi, E8.rssi, FD.rssi]
-                print(rssi_list)
-                beacon_location_list=[(0,0),(0,6.1), (6.1,0),(6.1, 6.1)]
+                # rssi_list = [C9.rssi, DB.rssi, E8.rssi, FD.rssi]
+                # print(rssi_list)
+                # beacon_location_list=[(0,0),(0,6.1), (6.1,0),(6.1, 6.1)]
+                # location_x, location_y = trilateration(beacon_location_list, rssi_list)
+                beacon_location_list=[(1.524,3.3),(6.24,3.3), (6.24, 6.756),(1.524, 6.756)]
+                rssi_list = [-60, -73, -73, -75]
+                
+                # rssi_list = [-74, -68, -67, -78]
                 location_x, location_y = trilateration(beacon_location_list, rssi_list)
                 print(location_x, location_y)
             except:
                 pass
-            location_x, location_y = 300, 400
+            # location_x, location_y = 300, 400
             payload = json.dumps({
                 "course_id": course_id,
                 "x_position": location_x,
                 "y_position": location_y
             })
-            location_x += 100
-            location_y += 100
+            # location_x += 100
+            # location_y += 100
             response = requests.post(url, headers=headers, data=payload)
 
             if response.status_code == 200:
